@@ -1,0 +1,104 @@
+\documentclass[11pt, oneside]{article}
+\usepackage{geometry}
+\usepackage{graphicx}
+\usepackage{amssymb}
+\usepackage{fancyhdr}
+\usepackage{lastpage}
+\usepackage{graphicx, wrapfig, subcaption, setspace, booktabs}
+\usepackage[T1]{fontenc}
+\usepackage[font=small, labelfont=bf]{caption}
+\usepackage{fourier}
+\usepackage[protrusion=true, expansion=true]{microtype}
+\usepackage[english]{babel}
+\usepackage{sectsty}
+\usepackage{url, lipsum}
+
+\geometry{letterpaper}
+
+\newcommand{\HRule}[1]{\rule{\linewidth}{#1}}
+\onehalfspacing
+\setcounter{tocdepth}{5}
+\setcounter{secnumdepth}{5}
+
+%-------------------------------------------------------------------------------
+% HEADER & FOOTER
+%-------------------------------------------------------------------------------
+\pagestyle{fancy}
+\fancyhf{}
+\setlength\headheight{15pt}
+\fancyhead[L]{Student ID: 3032162875}
+\fancyhead[R]{University of California, Berkeley}
+\fancyfoot[R]{Page \thepage\ of \pageref{LastPage}}
+
+%-------------------------------------------------------------------------------
+% TITLE PAGE
+%-------------------------------------------------------------------------------
+\title{
+  \normalsize \textsc{Technical Contributions [DRAFT]} \\ [2.0cm]
+  \HRule{0.5pt} \\
+  \LARGE \textbf{\uppercase{
+    Time Series Forecasting of Monthly Active Users with Long Short-Term Memory
+    Networks
+  }}
+  \HRule{2pt} \\ [0.5cm]
+  \vspace*{5\baselineskip}
+}
+\author{
+  Matthew Louis Rosendin \\
+  University of California, Berkeley \\
+  Department of Industrial Engineering and Operations Research
+}
+\date{April 13, 2018}
+
+%-------------------------------------------------------------------------------
+% DOCUMENT
+%-------------------------------------------------------------------------------
+
+\begin{document}
+\maketitle
+\newpage
+
+\tableofcontents
+\newpage
+
+\section{Introduction}
+\subsection{Motivation}
+\subsection{Goal}
+
+\section{Object-Oriented Abstraction}
+\subsection{Decomposition}
+\subsection{Encapsulation}
+
+\section{Hyperparameter Optimization}
+\subsection{Cross-validation}
+\subsection{Grid Search}
+\subsection{Results}
+
+\section{Systems Engineering}
+\subsection{Technology Stack}
+\subsection{Visualizations}
+\subsection{Job Scheduling}
+\subsection{Documentation}
+
+\section{Next Steps}
+\subsection{Data Pipeline Automation (Apache Hadoop)}
+\subsection{Dimensionality Reduction by Feature Selection}
+\subsection{Improving Hyperparameter Optimization Efficiency}
+\subsection{Distributed Machine Learning Clusters}
+
+\section{Conclusion}
+
+\section{Reference}
+% Hyperparameter optimization - Wikipedia
+% https://en.wikipedia.org/wiki/Hyperparameter_optimization
+
+% Bayesian information criterion - Wikipedia
+% https://en.wikipedia.org/wiki/Bayesian_information_criterion
+
+% Building Intelligent Systems: A Guide to Machine Learning Engineering
+% https://books.google.com/books?id=s91PDwAAQBAJ
+
+% Scaling up Machine Learning
+% https://books.google.com/books?id=9u0gAwAAQBAJ
+
+\end{document}
