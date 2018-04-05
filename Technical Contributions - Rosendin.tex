@@ -2,6 +2,7 @@
 \usepackage{geometry}
 \usepackage{graphicx}
 \usepackage{amssymb}
+\usepackage{amsmath}
 \usepackage{fancyhdr}
 \usepackage{lastpage}
 \usepackage{graphicx, wrapfig, subcaption, setspace, booktabs}
@@ -62,6 +63,55 @@
 \newpage
 
 \section{Introduction}
+In this chapter of the paper I analyze and discuss the implications of our model's performance and describe my work in deploying our model. First, a quick word on the motivation. I believe that our model is a novel application of machine learning to model active user growth. The results of our forecasts on the testing set are remarkable and therefore I would like to explain our choice of model and explore the forecast results in more detail in the following sections.
+
+In order to explain why we chose a long short-term memory network to model active user growth I will explain the characteristics of the problem we are solving through a brief taxonomy. The problem is best framed as, "how do we forecast monthly active usage multiple weeks into the future?". The most salient characteristic of this problem is that the data is a long sequence (i.e., it is chronologically ordered) of values, known as a \textit{time series}. What we are trying to achieve is a forecast of time series data, so the solution to the problem is known as \textit{time series forecasting}.
+
+The simplest model might be an \textit{autoregressive} (AR) model in which the forecast values are regressed on prior data:
+
+\begin{equation}
+X_t = c + \sum_{i=1}^p \phi_i X_{t-i} + \epsilon_t
+\end{equation}
+
+where $c$ is a constant, $\epsilon_t$ is an error term (just ignore it for now), and $\phi_1, ..., \phi_p$ are the parameters to be estimated by regression. To forecast a value for the present time $t$, we specify a parameter $p$, known as the "order" or "lag". With $p=3$ the corresponding model would look like this:
+
+\begin{equation}
+X_t = c + \phi_1 X_{t-1} + \phi_2 X_{t-2} + \phi_3 X_{t-3} + \epsilon_t
+\end{equation}
+
+We would call this an autoregressive model with a lag of 3 time steps where \textit{time steps} are the number of sequential data points. The autoregressive model can be notated as $AR(3)$ to indicate its order with $p=3$. To illustrate the next component of our model you can imagine we are predicting the fourth time step, where $t=4$:
+
+\begin{equation}
+X_4 = c + \phi_1 X_{3} + \phi_2 X_{2} + \phi_3 X_{1} + \epsilon_4
+\end{equation}
+
+Supposing we only have only two data, $X_1=1$ and $X_2=2$, how would we forecast the next 2 time steps? We could solve for all prior unknown data points in chronological order by choosing an error term and adjusting the parameters by regressing.
+
+\begin{equation}
+  \begin{split}
+    X_4 &= c + \phi_1 X_{3} + \phi_2 X_{2} + \phi_3 X_{1} + \epsilon_4 \\
+    X_3 &= c + \phi_1 X_{2} + \phi_2 X_{1} + \epsilon_3
+  \end{split}
+\end{equation}
+
+$\sum_{i=1}^q \theta_i \epsilon_{t-i}$
+
+\begin{itemize}
+  \item{ARMA model}
+  \item{ARIMA model}
+  \item{Supervised learning: using lags, differencing, and moving averages as features / one-stepped vs. multi-stepped / univariate vs. multivariate. ANNs can model non-linearity and have been shown to perform better than ARIMA models on similar time series datasets.}
+  \item{Recurrent neural networks}
+  \item{Long short-term memory neural networks}
+\end{itemize}
+
+- Sliding window strategy, also known as a lag method: The use of prior time steps to predict the next time step
+- Univariate vs. multivariate: Univariate Time Series: These are datasets where only a single variable is observed at each time, such as temperature each hour. The example in the previous section is a univariate time series dataset. Multivariate Time Series: These are datasets where two or more variables are observed at each time.
+- Onestep vs. multistep: One-Step Forecast: This is where the next time step (t+1) is predicted. Multi-Step Forecast: This is where two or more future time steps are to be predicted.
+- This time series is multi-stepped
+
+- "The encoder-decoder recurrent neural network is an architecture where one set of LSTMs learn to encode input sequences into a fixed-length internal representation, and second set of LSTMs read the internal representation and decode it into an output sequence. This architecture has shown state-of-the-art results on difficult sequence prediction problems. The encoder-decoder architecture still achieves excellent results on a wide range of problems. Nevertheless, it suffers from the constraint that all input sequences are forced to be encoded to a fixed length internal vector. This is believed to limit the performance of these networks, especially when considering long input sequences, such as very long sentences in text translation problems." - Machine Learning Mastery (https://machinelearningmastery.com/attention-long-short-term-memory-recurrent-neural-networks/)
+- "A potential issue with this encoder–decoder approach is that a neural network needs to be able to compress all the necessary information of a source sentence into a fixed-length vector. This may make it difficult for the neural network to cope with long sentences, especially those that are longer than the sentences in the training corpus." - Dzmitry Bahdanau, et al. ([Neural machine translation by jointly learning to align and translate](https://arxiv.org/abs/1409.0473))
+
 \subsection{Motivation}
 \subsection{Goal}
 
@@ -70,13 +120,16 @@
 \subsection{Encapsulation}
 
 \section{Hyperparameter Optimization}
+- Learning paramters (hyperparameters) vs. model parameters (learned parameters or the weights for features in regression)
 \subsection{Cross-validation}
 \subsection{Grid Search}
 \subsection{Results}
+\subsection{Discussion}
 
 \section{Systems Engineering}
 \subsection{Server Infrastructure}
 \subsection{Distributed Task Queue}
+Job scheduling via
 \subsection{Forecast Visualization}
 \subsection{Documentation}
 
@@ -90,6 +143,15 @@
 \section{Conclusion}
 
 \section{Reference}
+% An Empirical Comparison of Machine Learning Models for Time Series Forecasting
+% https://www.tandfonline.com/doi/abs/10.1080/07474938.2010.481556
+
+% Time series forecasting using a hybrid ARIMA and neural network model
+% https://www.sciencedirect.com/science/article/pii/S0925231201007020
+
+% Comparison of ARIMA and Artificial Neural Networks Models for Stock Price Prediction
+% https://www.hindawi.com/journals/jam/2014/614342/
+
 % Hyperparameter optimization - Wikipedia
 % https://en.wikipedia.org/wiki/Hyperparameter_optimization
 
