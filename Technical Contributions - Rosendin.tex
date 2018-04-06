@@ -62,10 +62,15 @@
 \tableofcontents
 \newpage
 
+\listoffigures
+\newpage
+
 \section{Introduction}
 In this chapter of the paper I analyze and discuss the implications of our model's performance and describe my work in deploying our model. First, a quick word on the motivation. I believe that our model is a novel application of machine learning to model active user growth. The results of our forecasts on the testing set are remarkable and therefore I would like to explain our choice of model and explore the forecast results in more detail in the following sections.
 
 In order to explain why we chose a long short-term memory network to model active user growth I will explain the characteristics of the problem we are solving through a brief taxonomy. The problem is best framed as, "how do we forecast monthly active usage multiple weeks into the future?". The most salient characteristic of this problem is that the data is a long sequence (i.e., it is chronologically ordered) of values, known as a \textit{time series}. What we are trying to achieve is a forecast of time series data, so the solution to the problem is known as \textit{time series forecasting}.
+
+\subsection{Autoregressive Models}
 
 The simplest model might be an \textit{autoregressive} (AR) model in which the forecast values are regressed on prior data:
 
@@ -73,63 +78,72 @@ The simplest model might be an \textit{autoregressive} (AR) model in which the f
 X_t = c + \sum_{i=1}^p \phi_i X_{t-i} + \epsilon_t
 \end{equation}
 
-where $c$ is a constant, $\epsilon_t$ is an error term (just ignore it for now), and $\phi_1, ..., \phi_p$ are the parameters to be estimated by regression. To forecast a value for the present time $t$, we specify a parameter $p$, known as the "order" or "lag". With $p=3$ the corresponding model would look like this:
+where $c$ is a constant, $\epsilon_t$ is an error term, and $\phi_1, ..., \phi_p$ are the parameters to be estimated by linear regression. To forecast a value for the present time $t$, we specify a parameter $p$, known as the "order" or "lag". With $p=3$ the corresponding model would look like this:
 
 \begin{equation}
 X_t = c + \phi_1 X_{t-1} + \phi_2 X_{t-2} + \phi_3 X_{t-3} + \epsilon_t
 \end{equation}
 
-We would call this an autoregressive model with a lag of 3 time steps where \textit{time steps} are the number of sequential data points. The autoregressive model can be notated as $AR(3)$ to indicate its order with $p=3$. To illustrate the next component of our model you can imagine we are predicting the fourth time step, where $t=4$:
+We would call this an autoregressive model with a lag of 3 time steps where \textit{time steps} are defined as the number of sequential data points. The autoregressive model can be notated as $AR(3)$ to indicate its order with $p=3$.
 
-\begin{equation}
-X_4 = c + \phi_1 X_{3} + \phi_2 X_{2} + \phi_3 X_{1} + \epsilon_4
-\end{equation}
+In our work we use the concept of "lag" from the autoregressive model in our supervised learning model. Our dataset is multivariate, meaning there are more than two observations for each time step. Since we would like to forecast multiple weeks into the future, our model is multi-stepped.
 
-Supposing we only have only two data, $X_1=1$ and $X_2=2$, how would we forecast the next 2 time steps? We could solve for all prior unknown data points in chronological order by choosing an error term and adjusting the parameters by regressing.
+\subsection{Recurrent Neural Networks}
 
-\begin{equation}
-  \begin{split}
-    X_4 &= c + \phi_1 X_{3} + \phi_2 X_{2} + \phi_3 X_{1} + \epsilon_4 \\
-    X_3 &= c + \phi_1 X_{2} + \phi_2 X_{1} + \epsilon_3
-  \end{split}
-\end{equation}
+There are many good reasons to justify using an artificial neural network (ANN). Much of the recent literature on time series forecasting is focusing on the advantage of ANNs versus other methods, including autoregressive interactive moving average (ARIMA) models. For instance, Ahmed et al. and Zhang show that ANNs are shown to be superior for generalized time series problems. Although complex models such as neural networks can hard to interpret, our project team values performance over interpretability. Furthermore, we have designed features similar to those in financial time series models. For financial stock data, Adebiye et al. show that ANNs are superior to ARIMA models. Lastly, ANNs are capable of modeling non-linearities which can improve the forecast.
 
-$\sum_{i=1}^q \theta_i \epsilon_{t-i}$
+\begin{figure}[h]
+  \caption{Diagram of a one-unit Long Short-Term Memory (LSTM) network}
+  \centering
+  \includegraphics[width=12.5cm]{images/Long_Short-Term_Memory.png}
+\end{figure}
 
-\begin{itemize}
-  \item{ARMA model}
-  \item{ARIMA model}
-  \item{Supervised learning: using lags, differencing, and moving averages as features / one-stepped vs. multi-stepped / univariate vs. multivariate. ANNs can model non-linearity and have been shown to perform better than ARIMA models on similar time series datasets.}
-  \item{Recurrent neural networks}
-  \item{Long short-term memory neural networks}
-\end{itemize}
-
-- Sliding window strategy, also known as a lag method: The use of prior time steps to predict the next time step
-- Univariate vs. multivariate: Univariate Time Series: These are datasets where only a single variable is observed at each time, such as temperature each hour. The example in the previous section is a univariate time series dataset. Multivariate Time Series: These are datasets where two or more variables are observed at each time.
-- Onestep vs. multistep: One-Step Forecast: This is where the next time step (t+1) is predicted. Multi-Step Forecast: This is where two or more future time steps are to be predicted.
-- This time series is multi-stepped
-
-- "The encoder-decoder recurrent neural network is an architecture where one set of LSTMs learn to encode input sequences into a fixed-length internal representation, and second set of LSTMs read the internal representation and decode it into an output sequence. This architecture has shown state-of-the-art results on difficult sequence prediction problems. The encoder-decoder architecture still achieves excellent results on a wide range of problems. Nevertheless, it suffers from the constraint that all input sequences are forced to be encoded to a fixed length internal vector. This is believed to limit the performance of these networks, especially when considering long input sequences, such as very long sentences in text translation problems." - Machine Learning Mastery (https://machinelearningmastery.com/attention-long-short-term-memory-recurrent-neural-networks/)
-- "A potential issue with this encoder–decoder approach is that a neural network needs to be able to compress all the necessary information of a source sentence into a fixed-length vector. This may make it difficult for the neural network to cope with long sentences, especially those that are longer than the sentences in the training corpus." - Dzmitry Bahdanau, et al. ([Neural machine translation by jointly learning to align and translate](https://arxiv.org/abs/1409.0473))
+Recurrent neural networks (RNNs) are a class of artificial neural network where connections between units form a directed graph along a sequence. In other words, RNNs retain state at one time to the next, using the previous state's output for the current estimate. This characteristic enables multi-stepped time series forecasting. A particular architecture of RNNs known as Long Short-Term Memory (LSTM) allows the model to recognize and retain short-term patterns for long periods of time. This architecture is used best where data from an earlier state needs to be recalled at a later state. Examples of LSTM networks in industry include Google Voice \cite{beaufays}.
 
 \subsection{Motivation}
+Senior management needs to interact with this tool.
+
 \subsection{Goal}
+The goal is to make the model interactive while tuning and testing.
 
 \section{Object-Oriented Abstraction}
+  \begin{itemize}
+    \item{Working model in a jupyter notebook}
+    \item{Needed to automate runs}
+    \item{Needed to organize the code}
+    \item{Needed to pass in arbitrary data}
+  \end{itemize}
+
 \subsection{Decomposition}
+  \begin{itemize}
+    \item{Break complex system into parts that are easier to conceive, understand, program, and maintain.}
+  \end{itemize}
 \subsection{Encapsulation}
+  \begin{itemize}
+    \item{Restricting components of model}
+    \item{Allowing specification of options}
+  \end{itemize}
 
 \section{Hyperparameter Optimization}
-- Learning paramters (hyperparameters) vs. model parameters (learned parameters or the weights for features in regression)
+\begin{itemize}
+  \item{Learning paramters (hyperparameters) vs. model parameters (learned parameters or the weights for features in regression)}
+  \item{Runtime and compute resources}
+\end{itemize}
+
 \subsection{Cross-validation}
+Train/test split time series data samples observed at fixed time intervals, in train/test sets.
+No shuffling. Successive splits must have higher test indices.
+In the kth split, it returns first k folds as train set and the (k+1)th fold as test set.
+Note that unlike standard cross-validation methods, successive training sets are supersets of those that come before them.
 \subsection{Grid Search}
+This search exhaustively generates candidates from a grid of parameter values specified with the \texttt{param\_grid} parameter
 \subsection{Results}
 \subsection{Discussion}
 
 \section{Systems Engineering}
 \subsection{Server Infrastructure}
 \subsection{Distributed Task Queue}
-Job scheduling via
+Job scheduling via Celery
 \subsection{Forecast Visualization}
 \subsection{Documentation}
 
@@ -142,29 +156,39 @@ Job scheduling via
 
 \section{Conclusion}
 
-\section{Reference}
-% An Empirical Comparison of Machine Learning Models for Time Series Forecasting
-% https://www.tandfonline.com/doi/abs/10.1080/07474938.2010.481556
+\begin{thebibliography}{9}
+  % An Empirical Comparison of Machine Learning Models for Time Series Forecasting
+  % https://www.tandfonline.com/doi/abs/10.1080/07474938.2010.481556
 
-% Time series forecasting using a hybrid ARIMA and neural network model
-% https://www.sciencedirect.com/science/article/pii/S0925231201007020
+  % Time series forecasting using a hybrid ARIMA and neural network model
+  % https://www.sciencedirect.com/science/article/pii/S0925231201007020
 
-% Comparison of ARIMA and Artificial Neural Networks Models for Stock Price Prediction
-% https://www.hindawi.com/journals/jam/2014/614342/
+  % Comparison of ARIMA and Artificial Neural Networks Models for Stock Price Prediction
+  % https://www.hindawi.com/journals/jam/2014/614342/
 
-% Hyperparameter optimization - Wikipedia
-% https://en.wikipedia.org/wiki/Hyperparameter_optimization
+  % Hyperparameter optimization - Wikipedia
+  % https://en.wikipedia.org/wiki/Hyperparameter_optimization
 
-% Bayesian information criterion - Wikipedia
-% https://en.wikipedia.org/wiki/Bayesian_information_criterion
+  % Bayesian information criterion - Wikipedia
+  % https://en.wikipedia.org/wiki/Bayesian_information_criterion
 
-% Building Intelligent Systems: A Guide to Machine Learning Engineering
-% https://books.google.com/books?id=s91PDwAAQBAJ
+  % Building Intelligent Systems: A Guide to Machine Learning Engineering
+  % https://books.google.com/books?id=s91PDwAAQBAJ
 
-% Scaling up Machine Learning
-% https://books.google.com/books?id=9u0gAwAAQBAJ
+  % Scaling up Machine Learning
+  % https://books.google.com/books?id=9u0gAwAAQBAJ
 
-% Hidden Technical Debt in Machine Learning Systems
-% https://papers.nips.cc/paper/5656-hidden-technical-debt-in-machine-learning-systems.pdf
+  % Hidden Technical Debt in Machine Learning Systems
+  % https://papers.nips.cc/paper/5656-hidden-technical-debt-in-machine-learning-systems.pdf
+
+  % Diagram of a one-unit Long Short-Term Memory (LSTM) network
+  % https://commons.wikimedia.org/w/index.php?curid=60149410
+
+  \bibitem{beaufays}
+  Beaufays. (2015, August 11). The neural networks behind Google Voice transcription [Blog post]. Retrieved from https://research.googleblog.com/2015/08/the-neural-networks-behind-google-voice.html.
+
+  % Google voice search: faster and more accurate
+  % https://research.googleblog.com/2015/09/google-voice-search-faster-and-more.html
+\end{thebibliography}
 
 \end{document}
