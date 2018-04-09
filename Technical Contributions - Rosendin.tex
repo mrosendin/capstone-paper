@@ -113,22 +113,13 @@ There are many good reasons to justify using an artificial neural network. Much 
 Recurrent neural networks (RNNs) are a class of artificial neural network where connections between units form a directed graph along a sequence. In other words, RNNs retain state at one time to the next, using the previous state's output for the current estimate. This characteristic enables multi-stepped time series forecasting. A particular architecture of RNNs known as Long Short-Term Memory (LSTM) allows the model to recognize and retain short-term patterns for long periods of time. This architecture is used best where data from an earlier state needs to be recalled at a later state. Examples of LSTM networks in industry include Google Voice \cite{beaufays}.
 
 \section{Object-Oriented Abstraction}
-  \begin{itemize}
-    \item{Working model in a jupyter notebook}
-    \item{Needed to automate runs}
-    \item{Needed to organize the code}
-    \item{Needed to pass in arbitrary data}
-  \end{itemize}
+The working LSTM model was created in a Jupyter Notebook. While serving as a minimum proof of concept, the model should not require the end-user engage directly with code. Furthermore, the following criteria were set: 1) the lifecycle of the model (from training, testing, to final predictions) needed to be automated and callable with one command; 2) the Jupyter Notebook code (which executes similarly to a script) needed to be organized into an object-oriented structure to store data within the object instance; 3) the model needed to be capable of loading datasets of arbitrary products. Criterion (2) is more a matter of preference and style to the author, as other programming paradigms could be considered. The rest of this section briefly discusses the process involved in restructuring the model code to meet the criteria.
 
 \subsection{Decomposition}
-  \begin{itemize}
-    \item{Break complex system into parts that are easier to conceive, understand, program, and maintain.}
-  \end{itemize}
+The goal of decomposition is to break a complex system into parts that are easier to understand, program, and maintain. The process of decomposing the Jupyter Notebook code involved defining separate modules for loading datasets (\texttt{data.py}), feature engineering (\texttt{features.py}), training/testing/predicting (\texttt{core.py}), and accessing utilities (\texttt{utils.py}). Furthermore, the code was organized into functions, and eventually into methods (discussed below).
+
 \subsection{Encapsulation}
-  \begin{itemize}
-    \item{Restricting components of model}
-    \item{Allowing specification of options}
-  \end{itemize}
+After breaking the code into manageable chunks, I created a Python class wrapper to store internal state and to allow the end-user to specify runtime options. The entire model can be run by using the wrapper's simple application programming interface (API).
 
 \section{Hyperparameter Optimization}
 \begin{itemize}
@@ -170,7 +161,7 @@ The application can be deployed onto HTTP-accessible hosts where multiple client
 \begin{figure}[h]
   \caption{Product 1 Trend: 6.24\% MAPE}
   \centering
-  \includegraphics[width=12.5cm]{images/Product_1-Trend-6-24_Percent_MAPE.png}
+  \includegraphics[width=12.5cm]{images/Product_1-Trend-6_24_Percent_MAPE.png}
   \label{fig:Product_1-Trend}
 \end{figure}
 
@@ -179,7 +170,7 @@ Figure~\ref{fig:Product_1-Trend} shows the historical monthly active user trend 
 \begin{figure}[h]
   \caption{Product 1 Forecast: 6.24\% MAPE}
   \centering
-  \includegraphics[width=12.5cm]{images/Product_1-Forecast-6-24_Percent_MAPE.png}
+  \includegraphics[width=12.5cm]{images/Product_1-Forecast-6_24_Percent_MAPE.png}
   \label{fig:Product_1-Forecast}
 \end{figure}
 
