@@ -3,6 +3,7 @@
 \usepackage{graphicx}
 \usepackage{amssymb}
 \usepackage{amsmath}
+% \usepackage{apacite}
 \usepackage{fancyhdr}
 \usepackage{lastpage}
 \usepackage{graphicx, wrapfig, subcaption, setspace, booktabs}
@@ -35,11 +36,11 @@
 % TITLE PAGE
 %-------------------------------------------------------------------------------
 \title{
-  \normalsize \textsc{Technical Contributions [DRAFT]} \\ [2.0cm]
+  \normalsize \textsc{    Time Series Forecasting of Monthly Active Users with Long Short-Term Memory
+      Networks} \\ [2.0cm]
   \HRule{0.5pt} \\
   \LARGE \textbf{\uppercase{
-    Time Series Forecasting of Monthly Active Users with Long Short-Term Memory
-    Networks
+    Technical Contributions [DRAFT]
   }}
   \HRule{2pt} \\ [0.5cm]
   \vspace*{5\baselineskip}
@@ -66,9 +67,20 @@
 \newpage
 
 \section{Introduction}
-In this chapter of the paper I analyze and discuss the implications of our model's performance and describe my work in deploying our model. First, a quick word on the motivation. I believe that our model is a novel application of machine learning to model active user growth. The results of our forecasts on the testing set are remarkable and therefore I would like to explain our choice of model and explore the forecast results in more detail in the following sections.
+Our project, in partnership with Adobe Systems Inc., is an interactive dashboard that forecasts monthly active users for any Adobe software product. We've accomplished forecasts with excellent accuracy as far as 5 months into the future. The growth model's forecast can be used for a number of reasons, including as an input to forecasting revenue or as a measure of product health. While forecasting monthly active users is nothing new, our application of artificial neural networks (ANNs) seems to be a novel approach that has yielded promising results.
 
-In order to explain why we chose a long short-term memory network to model active user growth I will explain the characteristics of the problem we are solving through a brief taxonomy. The problem is best framed as, "how do we forecast monthly active usage multiple weeks into the future?". The most salient characteristic of this problem is that the data is a long sequence (i.e., it is chronologically ordered) of values, known as a \textit{time series}. What we are trying to achieve is a forecast of time series data, so the solution to the problem is known as \textit{time series forecasting}.
+In this chapter of the paper I analyze and discuss the implications of our model's performance and describe my work in deploying our model. I begin by explaining the concrete goals of this work, then outlining the motivation, before finally diving into a technical introduction to our model. Following the basic conceptual discussion around our model, I start the discussion about how I refined the "raw" model code into a flexible, scalable, and configurable object. The translation of the model into a manageable machine learning software system led to additional improvements to the model, such as hyperparameter optimization. A byproduct of the optimization was an exhaustive experimentation of model performance metrics. The underpinning of the preceding work is the user interface. I discuss my work in front-end and systems engineering that resulted in the final deliverable: a forecasting dashboard powered by machine learning.
+
+\subsection{Goal}
+Our team's foremost goal is to create a practical and interactive product growth model for Adobe senior management. My individual goal was to design and create a user interface to interact with the model. Throughout my contributions, I've added additional value around testing the performance of our model and gathering relevant metrics.
+
+\subsection{Motivation}
+The motivation for creating a dashboard is straightforward. The dashboard enables the user to train the machine learning model resulting in performance metrics and the monthly active user forecast.
+The motivation for the section on hyperparameter optimization was simply to improve the results of our model. From the resulting tests, we've found that our model's forecasting capability had improved. Part of the discussion in this paper is reserved for analyzing the source of model improvement.
+
+\subsection{Time Series Forecasting}
+
+In order to explain why we chose our particular model (a long short-term memory network) I will explain the characteristics of the problem we are solving through a brief taxonomy. The problem is best framed as, "how do we forecast monthly active usage multiple weeks into the future?". The most salient characteristic of this problem is that the data is a long sequence (i.e., data is chronologically ordered) of values, known as a \textit{time series}. What we are trying to achieve is a forecast of time series data, so the solution to the problem is known as \textit{time series forecasting}.
 
 \subsection{Autoregressive Models}
 
@@ -90,7 +102,7 @@ In our work we use the concept of "lag" from the autoregressive model in our sup
 
 \subsection{Recurrent Neural Networks}
 
-There are many good reasons to justify using an artificial neural network (ANN). Much of the recent literature on time series forecasting is focusing on the advantage of ANNs versus other methods, including autoregressive interactive moving average (ARIMA) models. For instance, Ahmed et al. and Zhang show that ANNs are shown to be superior for generalized time series problems. Although complex models such as neural networks can hard to interpret, our project team values performance over interpretability. Furthermore, we have designed features similar to those in financial time series models. For financial stock data, Adebiye et al. show that ANNs are superior to ARIMA models. Lastly, ANNs are capable of modeling non-linearities which can improve the forecast.
+There are many good reasons to justify using an artificial neural network. Much of the recent literature on time series forecasting is focusing on the advantage of ANNs versus other methods, including autoregressive interactive moving average (ARIMA) models. For instance, Ahmed et al. and Zhang show that ANNs are shown to be superior for generalized time series problems \cite{ahmed et al.}. Although complex models such as neural networks can hard to interpret, our project team values performance over interpretability. Furthermore, we have designed features similar to those in financial time series models. For financial stock data, Adebiye et al. show that ANNs are superior to ARIMA models \cite{adebiye et al.}. Lastly, ANNs are capable of modeling non-linearities which can improve the forecast.
 
 \begin{figure}[h]
   \caption{Diagram of a one-unit Long Short-Term Memory (LSTM) network}
@@ -99,12 +111,6 @@ There are many good reasons to justify using an artificial neural network (ANN).
 \end{figure}
 
 Recurrent neural networks (RNNs) are a class of artificial neural network where connections between units form a directed graph along a sequence. In other words, RNNs retain state at one time to the next, using the previous state's output for the current estimate. This characteristic enables multi-stepped time series forecasting. A particular architecture of RNNs known as Long Short-Term Memory (LSTM) allows the model to recognize and retain short-term patterns for long periods of time. This architecture is used best where data from an earlier state needs to be recalled at a later state. Examples of LSTM networks in industry include Google Voice \cite{beaufays}.
-
-\subsection{Motivation}
-Senior management needs to interact with this tool.
-
-\subsection{Goal}
-The goal is to make the model interactive while tuning and testing.
 
 \section{Object-Oriented Abstraction}
   \begin{itemize}
@@ -142,24 +148,61 @@ This search exhaustively generates candidates from a grid of parameter values sp
 
 \section{Systems Engineering}
 \subsection{Server Infrastructure}
+All software written for this project was developed and tested on local machines. System specifications of the host machine producing the results in this report are shown in Figure~\ref{fig:System_Specs}. The system runs Python 3.6.4 and we've tested on local machines (macOS) and a Docker virtual host container running Ubuntu 16.04. The Docker virtual host container can scale to run multiple instances on a cloud computing platform without any modification to the source code.
+
+\begin{figure}[h]
+  \caption{Host machine system information}
+  \centering
+  \includegraphics[width=12.5cm]{images/System_Specs.png}
+  \label{fig:System_Specs}
+\end{figure}
+
 \subsection{Distributed Task Queue}
-Job scheduling via Celery
+The application can be deployed onto HTTP-accessible hosts where multiple clients can
+\section{User Interface}
 \subsection{Forecast Visualization}
+\begin{figure}[h]
+  \caption{User Interface: Dashboard}
+  \centering
+  \fbox{\includegraphics[width=12.5cm]{images/Dashboard.png}}
+\end{figure}
+
+\begin{figure}[h]
+  \caption{Product 1 Trend: 6.24\% MAPE}
+  \centering
+  \includegraphics[width=12.5cm]{images/Product_1-Trend-6-24_Percent_MAPE.png}
+  \label{fig:Product_1-Trend}
+\end{figure}
+
+Figure~\ref{fig:Product_1-Trend} shows the historical monthly active user trend of Product 1 with the 12 week forecast in the dashed line.
+
+\begin{figure}[h]
+  \caption{Product 1 Forecast: 6.24\% MAPE}
+  \centering
+  \includegraphics[width=12.5cm]{images/Product_1-Forecast-6-24_Percent_MAPE.png}
+  \label{fig:Product_1-Forecast}
+\end{figure}
+
+Figure~\ref{fig:Product_1-Forecast} shows the forecast for Product 1 over a 12 week period (December 3rd - February 25th 2018).
+
 \subsection{Documentation}
+Wrote documentation (akin to a usage guide)
 
 \section{Next Steps}
+\subsection{Websockets}
 \subsection{Data Pipeline Automation (Apache Hadoop)}
 \subsection{Dimensionality Reduction by Feature Selection}
 \subsection{Improving Hyperparameter Optimization Efficiency}
-\subsection{Statistical Significance Boundary Visualization}
+\subsection{Confidence Interval Visualization}
+A major upgrade would be a visualization of forecast confidence intervals on the current graph.
+
 \subsection{Distributed Machine Learning Clusters}
+As discussed previously, the Docker container can be scaled to run on a distributed system.
 
 \section{Conclusion}
+In conclusion, ...
 
 \begin{thebibliography}{9}
-  % An Empirical Comparison of Machine Learning Models for Time Series Forecasting
-  % https://www.tandfonline.com/doi/abs/10.1080/07474938.2010.481556
-
   % Time series forecasting using a hybrid ARIMA and neural network model
   % https://www.sciencedirect.com/science/article/pii/S0925231201007020
 
@@ -183,6 +226,12 @@ Job scheduling via Celery
 
   % Diagram of a one-unit Long Short-Term Memory (LSTM) network
   % https://commons.wikimedia.org/w/index.php?curid=60149410
+
+  \bibitem{adebiye et al.}
+  Adebiyi, A. A., Adewumi, A. O., \& Ayo, C. K. (2014). Comparison of ARIMA and Artificial Neural Network Models for Stock Price Prediction. \textit{Journal of Applied Mathematics}, \textit{2014}.
+
+  \bibitem{ahmed et al.}
+  Ahmed, N. K., Atiya, A. F., Gayar, N. E., \& El-Shishiny, H. (2010). An Empirical Comparison of Machine Learning Models for Time Series Forecasting. \textit{Econometric Reviews}, \textit{29}(5-6).
 
   \bibitem{beaufays}
   Beaufays. (2015, August 11). The neural networks behind Google Voice transcription [Blog post]. Retrieved from https://research.googleblog.com/2015/08/the-neural-networks-behind-google-voice.html.
