@@ -83,11 +83,11 @@ The motivation for the section on hyperparameter optimization was simply to impr
 
 \subsection{Time Series Forecasting}
 
-In order to explain why we chose our particular model (a long short-term memory network) I will explain the characteristics of the problem we are solving through a brief taxonomy. The problem is best framed as, "how do we forecast monthly active usage multiple weeks into the future?". The most salient characteristic of this problem is that the data is a long sequence (i.e., data is chronologically ordered) of values, known as a \textit{time series}. What we are trying to achieve is a forecast of time series data, so the solution to the problem is known as \textit{time series forecasting}.
+In order to explain why we chose our particular model (a long short-term memory network) I will explain the characteristics of the problem we are solving through a brief taxonomy. The problem is best framed as, "how do we forecast monthly active usage multiple weeks into the future?". The most salient characteristic of this problem is that the data is a long sequence (i.e., data is chronologically ordered) of values, known as a time series. What we are trying to achieve is a forecast of time series data, so the solution to the problem is known as time series forecasting.
 
 \subsection{Autoregressive Models}
 
-The simplest model might be an \textit{autoregressive} (AR) model in which the forecast values are regressed on prior data:
+The simplest model might be an autoregressive (AR) model in which the forecast values are regressed on prior data:
 
 \begin{equation}
   \label{eq:1}
@@ -101,7 +101,7 @@ where $c$ is a constant, $\epsilon_t$ is an error term, and $\phi_1, ..., \phi_p
   X_t = c + \phi_1 X_{t-1} + \phi_2 X_{t-2} + \phi_3 X_{t-3} + \epsilon_t
 \end{equation}
 
-We would call this an autoregressive model with a lag of 3 time steps where \textit{time steps} are defined as the number of sequential data points. The autoregressive model can be notated as $AR(3)$ to indicate its order with $p=3$.
+We would call this an autoregressive model with a lag of 3 time steps where time steps are defined as the number of sequential data points. The autoregressive model can be notated as $AR(3)$ to indicate its order with $p=3$.
 
 In our work we use the concept of "lag" from the autoregressive model in our supervised learning model. Our dataset is multivariate, meaning there are more than two observations for each time step. Since we would like to forecast multiple weeks into the future, our model is multi-stepped.
 
@@ -189,9 +189,7 @@ An example of the output this process is shown in Figure~\ref{fig:Example_Output
 I worked to productionize our model by building a back-end that is capable of extracting and preparing data, training and validating the model, and producing forecasts. The back-end performs the business logic computation without end-user interaction. The back-end was written entirely in Python and its component parts are discussed in this section.
 
 \subsection{Server Infrastructure}
-All software written for this project was developed and tested on local machines. System specifications of the host machine producing the results in this report are shown in Figure~\ref{fig:System_Specs}. The system runs Python 3.6.4 and we've tested on local machines (macOS) and a Docker virtual host container running Ubuntu 16.04 (see Section \ref{distributed_machine_learning_clusters} for further discussion about Docker).
-
-A simple web server framework, Flask (\url{http://flask.pocoo.org/}), is employed to interact with the front-end (see in Section \ref{user_interface}). A basic API has been developed to enable asynchronous communication with the front-end client device.
+All software written for this project was developed and tested on local machines. System specifications of the host machine producing the results in this report are shown in Figure~\ref{fig:System_Specs}. The system runs Python 3.6.4 and we've tested on local machines (macOS) and a Docker virtual host container running Ubuntu 16.04 (see Section \ref{distributed_machine_learning_clusters} for further discussion about Docker). A simple web server framework, Flask (\url{http://flask.pocoo.org/}), is employed to interact with the front-end (see in Section \ref{user_interface}). A basic API has been developed to enable asynchronous communication with the front-end client device.
 
 \begin{figure}[h]
   \caption{Host machine system information}
@@ -201,7 +199,7 @@ A simple web server framework, Flask (\url{http://flask.pocoo.org/}), is employe
 \end{figure}
 
 \subsection{Distributed Task Queue}
-The application can be deployed onto HTTP-accessible hosts where multiple clients can
+Since the machine learning processes are long-running processes, an open-source distributed task queue called Celery (\url{http://www.celeryproject.org/}) is used to manage the scheduling, status, and output. When the user uses the front-end to make a new forecast, an API endpoint queues the task. In our case, there was only one client utilizing the queue at a time. However, the additional benefit of using a task queue is to coordinate background jobs. When the end-user begins a new forecast task, they receive a response from the server immediately. The code on the client polls another API endpoint every second to check the status of the forecast task. When the status appears successful, the server responds with the necessary data to render the visualizations on the client device, as well as summary statistics.
 
 \section{User Interface}
 \label{user_interface}
