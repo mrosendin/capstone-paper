@@ -14,6 +14,9 @@
 \usepackage[english]{babel}
 \usepackage{sectsty}
 \usepackage{url, lipsum}
+\usepackage{mathtools}
+\usepackage{listings}
+\DeclarePairedDelimiter{\floor}{\lfloor}{\rfloor}
 
 \geometry{letterpaper}
 
@@ -36,11 +39,11 @@
 % TITLE PAGE
 %-------------------------------------------------------------------------------
 \title{
-  \normalsize \textsc{    Time Series Forecasting of Monthly Active Users with Long Short-Term Memory
-      Networks} \\ [2.0cm]
+  \normalsize \textsc{Chapter 1} \\ [2.0cm]
   \HRule{0.5pt} \\
   \LARGE \textbf{\uppercase{
-    Technical Contributions [DRAFT]
+  Time Series Forecasting of Monthly Active Users with Long Short-Term Memory
+      Networks
   }}
   \HRule{2pt} \\ [0.5cm]
   \vspace*{5\baselineskip}
@@ -87,13 +90,15 @@ In order to explain why we chose our particular model (a long short-term memory 
 The simplest model might be an \textit{autoregressive} (AR) model in which the forecast values are regressed on prior data:
 
 \begin{equation}
-X_t = c + \sum_{i=1}^p \phi_i X_{t-i} + \epsilon_t
+  \label{eq:1}
+  X_t = c + \sum_{i=1}^p \phi_i X_{t-i} + \epsilon_t
 \end{equation}
 
 where $c$ is a constant, $\epsilon_t$ is an error term, and $\phi_1, ..., \phi_p$ are the parameters to be estimated by linear regression. To forecast a value for the present time $t$, we specify a parameter $p$, known as the "order" or "lag". With $p=3$ the corresponding model would look like this:
 
 \begin{equation}
-X_t = c + \phi_1 X_{t-1} + \phi_2 X_{t-2} + \phi_3 X_{t-3} + \epsilon_t
+  \label{eq:2}
+  X_t = c + \phi_1 X_{t-1} + \phi_2 X_{t-2} + \phi_3 X_{t-3} + \epsilon_t
 \end{equation}
 
 We would call this an autoregressive model with a lag of 3 time steps where \textit{time steps} are defined as the number of sequential data points. The autoregressive model can be notated as $AR(3)$ to indicate its order with $p=3$.
@@ -105,7 +110,7 @@ In our work we use the concept of "lag" from the autoregressive model in our sup
 There are many good reasons to justify using an artificial neural network. Much of the recent literature on time series forecasting is focusing on the advantage of ANNs versus other methods, including autoregressive interactive moving average (ARIMA) models. For instance, Ahmed et al. and Zhang show that ANNs are shown to be superior for generalized time series problems \cite{ahmed et al.}. Although complex models such as neural networks can hard to interpret, our project team values performance over interpretability. Furthermore, we have designed features similar to those in financial time series models. For financial stock data, Adebiye et al. show that ANNs are superior to ARIMA models \cite{adebiye et al.}. Lastly, ANNs are capable of modeling non-linearities which can improve the forecast.
 
 \begin{figure}[h]
-  \caption{Diagram of a one-unit Long Short-Term Memory (LSTM) network}
+  \caption{Diagram of a one-unit Long Short-Term Memory (LSTM) network \cite{deloche}}
   \centering
   \includegraphics[width=12.5cm]{images/Long_Short-Term_Memory.png}
 \end{figure}
@@ -122,24 +127,71 @@ The goal of decomposition is to break a complex system into parts that are easie
 After breaking the code into manageable chunks, I created a Python class wrapper to store internal state and to allow the end-user to specify runtime options. The entire model can be run by using the wrapper's simple application programming interface (API).
 
 \section{Hyperparameter Optimization}
-\begin{itemize}
-  \item{Learning paramters (hyperparameters) vs. model parameters (learned parameters or the weights for features in regression)}
-  \item{Runtime and compute resources}
-\end{itemize}
+Hyperparameter optimization deals with the learning parameters of a model rather than weights for features. While I made a significant effort in this area, the optimization was only run on one machine. Increasing compute resources to perform a more extensive search may yield further interesting results.
 
 \subsection{Cross-validation}
-Train/test split time series data samples observed at fixed time intervals, in train/test sets.
-No shuffling. Successive splits must have higher test indices.
-In the kth split, it returns first k folds as train set and the (k+1)th fold as test set.
-Note that unlike standard cross-validation methods, successive training sets are supersets of those that come before them.
+\label{cross_validation}
+In time series problems, cross-validation is performed chronologically with splits at fixed time intervals. In my trials, I ran cross-validation with 2, 3, and 10 splits. I wanted to understand the change in our key metric, MAPE (mean absolute percent error), as the number of splits $S$ increases. According to the \texttt{scikit-learn} documenation, the training set $Tr$ for the $i$th split has a size
+
+\begin{equation}
+  \label{eq:3}
+  Tr_{i} = \floor*{\frac{i \times N}{(S + 1)}} + N \bmod (S + 1)
+\end{equation}
+
+where $N$ is the number of samples, $S$ is the number of splits, and $\floor{expression}$ denotes the floor function. Meanwhile, the test set $Te$ has the following size:
+
+\begin{equation}
+  \label{eq:4}
+  Te_{i} = \floor*{\frac{N}{(S + 1)}}
+\end{equation}
+
+For time series splits with $S>1$, the sum of the first train/test set is strictly less than $N$ and the last train/test set is equal to $N$:
+
+\begin{equation}
+  \label{eq:5}
+  Tr_{i} + Te_{i} < N \quad \forall i \in \{1, \dots, S-1\}
+\end{equation}
+
+\begin{equation}
+  \label{eq:6}
+  Tr_{S} + Te_{S} = N
+\end{equation}
+
+These equations describe the train/test split pairs. It is important to note that the chronological indexing of the data is preserved for both input data and additional "held-out" data. This splitting strategy helps validate the results of the exhaustive hyperparameter search that is described in the next section.
 \subsection{Grid Search}
-This search exhaustively generates candidates from a grid of parameter values specified with the \texttt{param\_grid} parameter
+This search algorithm is simple. It exhaustively generates candidate learning parameters and selects the best candidate based on the scoring function (MAPE). Each candidate undergoes the time series splitting strategy discussed in Section \ref{cross_validation} to help validate the candidate's score. Further discussion about alternative algorithms is in Section \ref{improving_hyperparameter_optimization_efficiency}.
+
 \subsection{Results}
-\subsection{Discussion}
+An example of the output this process is shown in Figure~\ref{fig:Example_Output}.
+
+\begin{figure}[h]
+  \caption{Example output: 5.79\% MAPE}
+  \label{fig:Example_Output}
+  \begin{center}
+    \begin{tabular}{c}
+      \begin{lstlisting}
+        Parameters: {
+          'batch_size': 150,
+          'epochs': 200,
+          'optimizer': 'adam',
+          'units': 100
+        }
+        Test loss: [128.97596047141334, 128.97596047141334]
+        Testing set RMSE: 24318.87
+        Testing set MAPE: 5.79%
+        Testing set sMAPE: 0.06%
+      \end{lstlisting}
+    \end{tabular}
+  \end{center}
+\end{figure}
 
 \section{Systems Engineering}
+I worked to productionize our model by building a back-end that is capable of extracting and preparing data, training and validating the model, and producing forecasts. The back-end performs the business logic computation without end-user interaction. The back-end was written entirely in Python and its component parts are discussed in this section.
+
 \subsection{Server Infrastructure}
-All software written for this project was developed and tested on local machines. System specifications of the host machine producing the results in this report are shown in Figure~\ref{fig:System_Specs}. The system runs Python 3.6.4 and we've tested on local machines (macOS) and a Docker virtual host container running Ubuntu 16.04. The Docker virtual host container can scale to run multiple instances on a cloud computing platform without any modification to the source code.
+All software written for this project was developed and tested on local machines. System specifications of the host machine producing the results in this report are shown in Figure~\ref{fig:System_Specs}. The system runs Python 3.6.4 and we've tested on local machines (macOS) and a Docker virtual host container running Ubuntu 16.04 (see Section \ref{distributed_machine_learning_clusters} for further discussion about Docker).
+
+A simple web server framework, Flask (\url{http://flask.pocoo.org/}), is employed to interact with the front-end (see in Section \ref{user_interface}). A basic API has been developed to enable asynchronous communication with the front-end client device.
 
 \begin{figure}[h]
   \caption{Host machine system information}
@@ -150,16 +202,18 @@ All software written for this project was developed and tested on local machines
 
 \subsection{Distributed Task Queue}
 The application can be deployed onto HTTP-accessible hosts where multiple clients can
+
 \section{User Interface}
+\label{user_interface}
 \subsection{Forecast Visualization}
 \begin{figure}[h]
-  \caption{User Interface: Dashboard}
+  \caption{Dashboard user interface}
   \centering
   \fbox{\includegraphics[width=12.5cm]{images/Dashboard.png}}
 \end{figure}
 
 \begin{figure}[h]
-  \caption{Product 1 Trend: 6.24\% MAPE}
+  \caption{Product 1 trend: 6.24\% MAPE}
   \centering
   \includegraphics[width=12.5cm]{images/Product_1-Trend-6_24_Percent_MAPE.png}
   \label{fig:Product_1-Trend}
@@ -168,7 +222,7 @@ The application can be deployed onto HTTP-accessible hosts where multiple client
 Figure~\ref{fig:Product_1-Trend} shows the historical monthly active user trend of Product 1 with the 12 week forecast in the dashed line.
 
 \begin{figure}[h]
-  \caption{Product 1 Forecast: 6.24\% MAPE}
+  \caption{Product 1 forecast: 6.24\% MAPE}
   \centering
   \includegraphics[width=12.5cm]{images/Product_1-Forecast-6_24_Percent_MAPE.png}
   \label{fig:Product_1-Forecast}
@@ -181,14 +235,19 @@ Wrote documentation (akin to a usage guide)
 
 \section{Next Steps}
 \subsection{Websockets}
+Improve job monitoring; rather than polling every second with HTTP calls, open a websocket channel.
 \subsection{Data Pipeline Automation (Apache Hadoop)}
 \subsection{Dimensionality Reduction by Feature Selection}
 \subsection{Improving Hyperparameter Optimization Efficiency}
+  \label{improving_hyperparameter_optimization_efficiency}
+  The brute-force search algorithm used to optimize hyperparameters can probably be replaced with another. The \texttt{GridSearchCV} class from \texttt{scikit-learn} implements the algorithm that was used for our project, but other hyperparameter optimizers are available in the \texttt{model\_selection} module of \texttt{scikit-learn}. The other options include a randomized search where a subset of the parameter grid is sampled. This requires passing in distributions of the hyperparameters themselves, which could be an interesting opportunity to avoid an exhaustive search.
+
 \subsection{Confidence Interval Visualization}
 A major upgrade would be a visualization of forecast confidence intervals on the current graph.
 
 \subsection{Distributed Machine Learning Clusters}
-As discussed previously, the Docker container can be scaled to run on a distributed system.
+\label{distributed_machine_learning_clusters}
+Docker containers can be scaled on nodes in a distributed system.
 
 \section{Conclusion}
 In conclusion, ...
@@ -226,6 +285,9 @@ In conclusion, ...
 
   \bibitem{beaufays}
   Beaufays. (2015, August 11). The neural networks behind Google Voice transcription [Blog post]. Retrieved from https://research.googleblog.com/2015/08/the-neural-networks-behind-google-voice.html.
+
+  \bibitem{deloche}
+  Deloche, Fran\c{c}ois. (2017). Diagram of a one-unit Long Short-Term Memory (LSTM) network. Retrieved from https://commons.wikimedia.org/w/index.php?curid=60149410.
 
   % Google voice search: faster and more accurate
   % https://research.googleblog.com/2015/09/google-voice-search-faster-and-more.html
