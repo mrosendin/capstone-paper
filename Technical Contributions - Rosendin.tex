@@ -203,11 +203,16 @@ Since the machine learning processes are long-running processes, an open-source 
 
 \section{User Interface}
 \label{user_interface}
+The user interface (UI) ties together my team's work on building an advanced machine-learning model and providing real value to Adobe senior management. Creating the UI was a careful process because it had to meet the needs of our industry sponsor (Adobe) and it had to integrate with our back-end. My general approach involved gathering requirements, sketching the UI, presenting the sketch for feedback, developing visual elements, and iterating.
+
 \subsection{Forecast Visualization}
+The forecast app shows a line chart of historical data and forecasted monthly active users. The end-user is able to isolate the forecast trendline and export the chart to various image formats. Figure~\ref{fig:Product_1-Trend} shows the historical monthly active user trend of Product 1 over a 12 week forecast in the dashed line, while Figure~\ref{fig:Product_1-Forecast} shows the isolated forecast for Product 1.
+
 \begin{figure}[h]
   \caption{Dashboard user interface}
   \centering
   \fbox{\includegraphics[width=12.5cm]{images/Dashboard.png}}
+  \label{fig:Dashboard}
 \end{figure}
 
 \begin{figure}[h]
@@ -217,8 +222,6 @@ Since the machine learning processes are long-running processes, an open-source 
   \label{fig:Product_1-Trend}
 \end{figure}
 
-Figure~\ref{fig:Product_1-Trend} shows the historical monthly active user trend of Product 1 with the 12 week forecast in the dashed line.
-
 \begin{figure}[h]
   \caption{Product 1 forecast: 6.24\% MAPE}
   \centering
@@ -226,10 +229,8 @@ Figure~\ref{fig:Product_1-Trend} shows the historical monthly active user trend 
   \label{fig:Product_1-Forecast}
 \end{figure}
 
-Figure~\ref{fig:Product_1-Forecast} shows the forecast for Product 1 over a 12 week period (December 3rd - February 25th 2018).
-
 \subsection{Documentation}
-Wrote documentation (akin to a usage guide)
+I also wrote documentation for the forecasting app with three sections tailored to different stakeholder segments. The first section provides basic usage instructions for the non-technical end-user. The second section, tailored towards data scientists, goes more in-depth about the organization of the model code and how the cross-validation works. Lastly, the third section provides all technical documentation about the application itself, tailored towards developers.
 
 \section{Next Steps}
 \subsection{Websockets}
