@@ -165,7 +165,7 @@ This search algorithm is simple. It exhaustively generates candidate learning pa
 An example of the output this process is shown in Figure~\ref{fig:Example_Output}.
 
 \begin{figure}[h]
-  \caption{Example output: 5.79\% MAPE}
+  \caption{Example of grid search output: 5.79\% MAPE}
   \label{fig:Example_Output}
   \begin{center}
     \begin{tabular}{c}
@@ -189,7 +189,7 @@ An example of the output this process is shown in Figure~\ref{fig:Example_Output
 I worked to productionize our model by building a back-end that is capable of extracting and preparing data, training and validating the model, and producing forecasts. The back-end performs the business logic computation without end-user interaction. The back-end was written entirely in Python and its component parts are discussed in this section.
 
 \subsection{Server Infrastructure}
-All software written for this project was developed and tested on local machines. System specifications of the host machine producing the results in this report are shown in Figure~\ref{fig:System_Specs}. The system runs Python 3.6.4 and we've tested on local machines (macOS) and a Docker virtual host container running Ubuntu 16.04 (see Section \ref{distributed_machine_learning_clusters} for further discussion about Docker). A simple web server framework, Flask (\url{http://flask.pocoo.org/}), is employed to interact with the front-end (see in Section \ref{user_interface}). A basic API has been developed to enable asynchronous communication with the front-end client device.
+All software written for this project was developed and tested on local machines. System specifications of the host machine producing the results in this report are shown in Figure~\ref{fig:System_Specs}. The system runs Python 3.6.4 and we've tested on local machines (macOS) and a Docker virtual host container running Ubuntu 16.04. A simple web server framework, Flask (\url{http://flask.pocoo.org/}), is employed to interact with the front-end (see in Section \ref{user_interface}). A basic API has been developed to enable asynchronous communication with the front-end client device.
 
 \begin{figure}[h]
   \caption{Host machine system information}
@@ -205,15 +205,15 @@ Since the machine learning processes are long-running processes, an open-source 
 \label{user_interface}
 The user interface (UI) ties together my team's work on building an advanced machine-learning model and providing real value to Adobe senior management. Creating the UI was a careful process because it had to meet the needs of our industry sponsor (Adobe) and it had to integrate with our back-end. My general approach involved gathering requirements, sketching the UI, presenting the sketch for feedback, developing visual elements, and iterating.
 
-\subsection{Forecast Visualization}
-The forecast app shows a line chart of historical data and forecasted monthly active users. The end-user is able to isolate the forecast trendline and export the chart to various image formats. Figure~\ref{fig:Product_1-Trend} shows the historical monthly active user trend of Product 1 over a 12 week forecast in the dashed line, while Figure~\ref{fig:Product_1-Forecast} shows the isolated forecast for Product 1.
-
 \begin{figure}[h]
   \caption{Dashboard user interface}
   \centering
   \fbox{\includegraphics[width=12.5cm]{images/Dashboard.png}}
   \label{fig:Dashboard}
 \end{figure}
+
+\subsection{Forecast Visualization}
+The forecast app shows a line chart of historical data and forecasted monthly active users. The end-user is able to isolate the forecast trendline and export the chart to various image formats. Figure~\ref{fig:Product_1-Trend} shows the historical monthly active user trend of Product 1 over a 12 week forecast in the dashed line, while Figure~\ref{fig:Product_1-Forecast} shows the isolated forecast for Product 1.
 
 \begin{figure}[h]
   \caption{Product 1 trend: 6.24\% MAPE}
@@ -234,19 +234,17 @@ I also wrote documentation for the forecasting app with three sections tailored 
 
 \section{Next Steps}
 \subsection{Websockets}
-Improve job monitoring; rather than polling every second with HTTP calls, open a websocket channel.
-\subsection{Data Pipeline Automation (Apache Hadoop)}
-\subsection{Dimensionality Reduction by Feature Selection}
+Currently, the forecast app polls the task status endpoint every second. The issue is that the task's status may not have changed, resulting in network overhead. Websockets provide a better alternative to HTTP. A websocket channel will enable the client device to subscribe to "events" from the back-end. For instance, when the task completes, the back-end can publish a new event that notifies the client device in real-time. However, websocket support with Flask may be limited and this improvement would not yield benefits unless the forecast app being used by multiple parties.
+
+\subsection{Data Pipeline Automation (Apache Hive/Hadoop)}
+Currently, new datasets must be moved to the project data folder manually. A future improvement may involve a direct connection to Adobe's Hive and Hadoop data services in order to automate the pull of new data. For instance, a SQL query editor may enable the end-user to create or modify new or previous queries to forecast on various datasets. Perhaps an intermediate step would involve an interface for managing CSV file datasets from within the host file system.
+
 \subsection{Improving Hyperparameter Optimization Efficiency}
   \label{improving_hyperparameter_optimization_efficiency}
   The brute-force search algorithm used to optimize hyperparameters can probably be replaced with another. The \texttt{GridSearchCV} class from \texttt{scikit-learn} implements the algorithm that was used for our project, but other hyperparameter optimizers are available in the \texttt{model\_selection} module of \texttt{scikit-learn}. The other options include a randomized search where a subset of the parameter grid is sampled. This requires passing in distributions of the hyperparameters themselves, which could be an interesting opportunity to avoid an exhaustive search.
 
 \subsection{Confidence Interval Visualization}
 A major upgrade would be a visualization of forecast confidence intervals on the current graph.
-
-\subsection{Distributed Machine Learning Clusters}
-\label{distributed_machine_learning_clusters}
-Docker containers can be scaled on nodes in a distributed system.
 
 \section{Conclusion}
 In conclusion, ...
