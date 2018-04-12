@@ -7,6 +7,7 @@
 \usepackage{fancyhdr}
 \usepackage{lastpage}
 \usepackage{graphicx, wrapfig, subcaption, setspace, booktabs}
+\usepackage[toc,page]{appendix}
 \usepackage[T1]{fontenc}
 \usepackage[font=small, labelfont=bf]{caption}
 \usepackage{fourier}
@@ -186,7 +187,7 @@ An example of the output this process is shown in Figure~\ref{fig:Example_Output
 \end{figure}
 
 \section{Systems Engineering}
-I worked to productionize our model by building a back-end that is capable of extracting and preparing data, training and validating the model, and producing forecasts. The back-end performs the business logic computation without end-user interaction. The back-end was written entirely in Python and its component parts are discussed in this section.
+The goal at the onset was to develop a minimal machine learning system to avoid the problem of technical debt \cite{sculley et al.}. I worked to productionize our model by building a back-end that is capable of extracting and preparing data, training and validating the model, and producing forecasts. The back-end performs the business logic computation without end-user interaction. The back-end was written entirely in Python and its component parts are discussed in this section.
 
 \subsection{Server Infrastructure}
 All software written for this project was developed and tested on local machines. System specifications of the host machine producing the results in this report are shown in Figure~\ref{fig:System_Specs}. The system runs Python 3.6.4 and we've tested on local machines (macOS) and a Docker virtual host container running Ubuntu 16.04. A simple web server framework, Flask (\url{http://flask.pocoo.org/}), is employed to interact with the front-end (see in Section \ref{user_interface}). A basic API has been developed to enable asynchronous communication with the front-end client device.
@@ -213,21 +214,7 @@ The user interface (UI) ties together my team's work on building an advanced mac
 \end{figure}
 
 \subsection{Forecast Visualization}
-The forecast app shows a line chart of historical data and forecasted monthly active users. The end-user is able to isolate the forecast trendline and export the chart to various image formats. Figure~\ref{fig:Product_1-Trend} shows the historical monthly active user trend of Product 1 over a 12 week forecast in the dashed line, while Figure~\ref{fig:Product_1-Forecast} shows the isolated forecast for Product 1.
-
-\begin{figure}[h]
-  \caption{Product 1 trend: 6.24\% MAPE}
-  \centering
-  \includegraphics[width=12.5cm]{images/Product_1-Trend-6_24_Percent_MAPE.png}
-  \label{fig:Product_1-Trend}
-\end{figure}
-
-\begin{figure}[h]
-  \caption{Product 1 forecast: 6.24\% MAPE}
-  \centering
-  \includegraphics[width=12.5cm]{images/Product_1-Forecast-6_24_Percent_MAPE.png}
-  \label{fig:Product_1-Forecast}
-\end{figure}
+The forecast app shows a line chart of historical data and forecasted monthly active users. The end-user is able to isolate the forecast trendline and export the chart to various image formats. Charts related to forecasting are shown in the Appendix. Figure~\ref{fig:Product_1-Trend} shows the historical monthly active user trend of Product 1 over a 12 week forecast in the dashed line, while Figure~\ref{fig:Product_1-Forecast} shows the isolated forecast for Product 1.
 
 \subsection{Documentation}
 I also wrote documentation for the forecasting app with three sections tailored to different stakeholder segments. The first section provides basic usage instructions for the non-technical end-user. The second section, tailored towards data scientists, goes more in-depth about the organization of the model code and how the cross-validation works. Lastly, the third section provides all technical documentation about the application itself, tailored towards developers.
@@ -240,24 +227,15 @@ Currently, the forecast app polls the task status endpoint every second. The iss
 Currently, new datasets must be moved to the project data folder manually. A future improvement may involve a direct connection to Adobe's Hive and Hadoop data services in order to automate the pull of new data. For instance, a SQL query editor may enable the end-user to create or modify new or previous queries to forecast on various datasets. Perhaps an intermediate step would involve an interface for managing CSV file datasets from within the host file system.
 
 \subsection{Improving Hyperparameter Optimization Efficiency}
-  \label{improving_hyperparameter_optimization_efficiency}
-  The brute-force search algorithm used to optimize hyperparameters can probably be replaced with another. The \texttt{GridSearchCV} class from \texttt{scikit-learn} implements the algorithm that was used for our project, but other hyperparameter optimizers are available in the \texttt{model\_selection} module of \texttt{scikit-learn}. The other options include a randomized search where a subset of the parameter grid is sampled. This requires passing in distributions of the hyperparameters themselves, which could be an interesting opportunity to avoid an exhaustive search.
-
-\subsection{Confidence Interval Visualization}
-A major upgrade would be a visualization of forecast confidence intervals on the current graph.
+\label{improving_hyperparameter_optimization_efficiency}
+The brute-force search algorithm used to optimize hyperparameters can probably be replaced with another. The \texttt{GridSearchCV} class from \texttt{scikit-learn} implements the algorithm that was used for our project, but other hyperparameter optimizers are available in the \texttt{model\_selection} module of \texttt{scikit-learn}. The other options include a randomized search where a subset of the parameter grid is sampled. This requires passing in distributions of the hyperparameters themselves, which could be an interesting opportunity to avoid an exhaustive search.
 
 \section{Conclusion}
-In conclusion, ...
+The forecast app creates 16 week forecasts in under 1 minute with a 5\% error rate. The model was productionized into a dashboard interface that can be deployed anywhere. There are still further steps that would improve the user experience and model accuracy. There is also further research around the efficacy of our results, pertaining to LSTM networks, to be completed.
 
 \begin{thebibliography}{9}
   % Time series forecasting using a hybrid ARIMA and neural network model
   % https://www.sciencedirect.com/science/article/pii/S0925231201007020
-
-  % Comparison of ARIMA and Artificial Neural Networks Models for Stock Price Prediction
-  % https://www.hindawi.com/journals/jam/2014/614342/
-
-  % Hyperparameter optimization - Wikipedia
-  % https://en.wikipedia.org/wiki/Hyperparameter_optimization
 
   % Bayesian information criterion - Wikipedia
   % https://en.wikipedia.org/wiki/Bayesian_information_criterion
@@ -268,11 +246,8 @@ In conclusion, ...
   % Scaling up Machine Learning
   % https://books.google.com/books?id=9u0gAwAAQBAJ
 
-  % Hidden Technical Debt in Machine Learning Systems
-  % https://papers.nips.cc/paper/5656-hidden-technical-debt-in-machine-learning-systems.pdf
-
-  % Diagram of a one-unit Long Short-Term Memory (LSTM) network
-  % https://commons.wikimedia.org/w/index.php?curid=60149410
+  % Google voice search: faster and more accurate
+  % https://research.googleblog.com/2015/09/google-voice-search-faster-and-more.html
 
   \bibitem{adebiye et al.}
   Adebiyi, A. A., Adewumi, A. O., \& Ayo, C. K. (2014). Comparison of ARIMA and Artificial Neural Network Models for Stock Price Prediction. \textit{Journal of Applied Mathematics}, \textit{2014}.
@@ -286,8 +261,24 @@ In conclusion, ...
   \bibitem{deloche}
   Deloche, Fran\c{c}ois. (2017). Diagram of a one-unit Long Short-Term Memory (LSTM) network. Retrieved from https://commons.wikimedia.org/w/index.php?curid=60149410.
 
-  % Google voice search: faster and more accurate
-  % https://research.googleblog.com/2015/09/google-voice-search-faster-and-more.html
+  \bibitem{sculley et al.}
+  Sculley, D., Holt, G., Golovin, D., Davydov, E., Phillips, T., Ebner, D., ...Dennison, D. (2015). Hidden Technical Debt in Machine Learning Systems. \textit{NIPS'15 Proceedings of the 28th International Conference on Neural Information Processing Systems}, \textit{2}(2503-2511).
 \end{thebibliography}
+
+\begin{appendices}
+\begin{figure}[h]
+  \caption{Product 1 trend: 6.24\% MAPE}
+  \centering
+  \includegraphics[width=12.5cm]{images/Product_1-Trend-6_24_Percent_MAPE.png}
+  \label{fig:Product_1-Trend}
+\end{figure}
+
+\begin{figure}[h]
+  \caption{Product 1 forecast: 6.24\% MAPE}
+  \centering
+  \includegraphics[width=12.5cm]{images/Product_1-Forecast-6_24_Percent_MAPE.png}
+  \label{fig:Product_1-Forecast}
+\end{figure}
+\end{appendices}
 
 \end{document}
