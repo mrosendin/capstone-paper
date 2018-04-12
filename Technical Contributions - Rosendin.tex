@@ -71,7 +71,7 @@
 \newpage
 
 \section{Introduction}
-Our project, in partnership with Adobe Systems Inc., is an interactive dashboard that forecasts monthly active users for any Adobe software product. We've accomplished forecasts with excellent accuracy as far as 5 months into the future. The growth model's forecast can be used for a number of reasons, including as an input to forecasting revenue or as a measure of product health. While forecasting monthly active users is nothing new, our application of artificial neural networks (ANNs) seems to be a novel approach that has yielded promising results.
+Our project, in partnership with Adobe Systems Inc., is an interactive dashboard that forecasts monthly active users (MAU) for any Adobe software product. We've accomplished forecasts with excellent accuracy as far as 5 months into the future. The growth model's forecast can be used for a number of reasons, including as an input to forecasting revenue or as a measure of product health. While forecasting monthly active users is nothing new, our application of artificial neural networks (ANNs) seems to be a novel approach that has yielded promising results.
 
 In this chapter of the paper I analyze and discuss the implications of our model's performance and describe my work in deploying our model. I begin by explaining the concrete goals of this work, then outlining the motivation, before finally diving into a technical introduction to our model. Following the basic conceptual discussion around our model, I start the discussion about how I refined the "raw" model code into a flexible, scalable, and configurable object. The translation of the model into a manageable machine learning software system led to additional improvements to the model, such as hyperparameter optimization. A byproduct of the optimization was an exhaustive experimentation of model performance metrics. The underpinning of the preceding work is the user interface. I discuss my work in front-end and systems engineering that resulted in the final deliverable: a forecasting dashboard powered by machine learning.
 
@@ -79,7 +79,7 @@ In this chapter of the paper I analyze and discuss the implications of our model
 Our team's foremost goal is to create a practical and interactive product growth model for Adobe senior management. My individual goal was to design and create a user interface to interact with the model. Throughout my contributions, I've added additional value around testing the performance of our model and gathering relevant metrics.
 
 \subsection{Motivation}
-The motivation for creating a dashboard is straightforward. The dashboard enables the user to train the machine learning model resulting in performance metrics and the monthly active user forecast.
+The motivation for creating a dashboard is straightforward. The dashboard enables the user to forecast and analyze a product's future MAU.
 The motivation for the section on hyperparameter optimization was simply to improve the results of our model. From the resulting tests, we've found that our model's forecasting capability had improved. Part of the discussion in this paper is reserved for analyzing the source of model improvement.
 
 \subsection{Time Series Forecasting}
@@ -119,13 +119,13 @@ There are many good reasons to justify using an artificial neural network. Much 
 Recurrent neural networks (RNNs) are a class of artificial neural network where connections between units form a directed graph along a sequence. In other words, RNNs retain state at one time to the next, using the previous state's output for the current estimate. This characteristic enables multi-stepped time series forecasting. A particular architecture of RNNs known as Long Short-Term Memory (LSTM) allows the model to recognize and retain short-term patterns for long periods of time. This architecture is used best where data from an earlier state needs to be recalled at a later state. Examples of LSTM networks in industry include Google Voice \cite{beaufays}.
 
 \section{Object-Oriented Abstraction}
-The working LSTM model was created in a Jupyter Notebook. While serving as a minimum proof of concept, the model should not require the end-user engage directly with code. Furthermore, the following criteria were set: 1) the lifecycle of the model (from training, testing, to final predictions) needed to be automated and callable with one command; 2) the Jupyter Notebook code (which executes similarly to a script) needed to be organized into an object-oriented structure to store data within the object instance; 3) the model needed to be capable of loading datasets of arbitrary products. Criterion (2) is more a matter of preference and style to the author, as other programming paradigms could be considered. The rest of this section briefly discusses the process involved in restructuring the model code to meet the criteria.
+The working LSTM model was created in a Jupyter Notebook. While serving as a minimum proof of concept, the model should not require that the end-user engage directly with code. Furthermore, the following criteria were set: 1) the lifecycle of the model from training, testing, to final predictions needed to be automated and callable with a simple applicaition programming interface (API); 2) the Jupyter Notebook code (which executes similarly to a script) needed to be organized into an object-oriented structure to store data within the object instance; 3) the model needed to be capable of loading datasets of arbitrary products. Criterion (2) is more a matter of preference and style to the author, as other programming paradigms could be considered. The rest of this section briefly discusses the process involved in restructuring the model code to meet the criteria.
 
 \subsection{Decomposition}
 The goal of decomposition is to break a complex system into parts that are easier to understand, program, and maintain. The process of decomposing the Jupyter Notebook code involved defining separate modules for loading datasets (\texttt{data.py}), feature engineering (\texttt{features.py}), training/testing/predicting (\texttt{core.py}), and accessing utilities (\texttt{utils.py}). Furthermore, the code was organized into functions, and eventually into methods (discussed below).
 
 \subsection{Encapsulation}
-After breaking the code into manageable chunks, I created a Python class wrapper to store internal state and to allow the end-user to specify runtime options. The entire model can be run by using the wrapper's simple application programming interface (API).
+After breaking the code into manageable chunks, I created a Python class wrapper to store internal state and to allow the end-user to specify runtime options. The entire model can be run by using the wrapper's simple API.
 
 \section{Hyperparameter Optimization}
 Hyperparameter optimization deals with the learning parameters of a model rather than weights for features. While I made a significant effort in this area, the optimization was only run on one machine. Increasing compute resources to perform a more extensive search may yield further interesting results.
@@ -139,7 +139,7 @@ In time series problems, cross-validation is performed chronologically with spli
   Tr_{i} = \floor*{\frac{i \times N}{(S + 1)}} + N \bmod (S + 1)
 \end{equation}
 
-where $N$ is the number of samples, $S$ is the number of splits, and $\floor{expression}$ denotes the floor function. Meanwhile, the test set $Te$ has the following size:
+where $N$ is the number of samples, $S$ is the number of splits, and $\floor{expression}$ denotes the floor function. Meanwhile, the test set $Te$ has the size shown in equation \ref{eq:4}.
 
 \begin{equation}
   \label{eq:4}
@@ -160,13 +160,44 @@ For time series splits with $S>1$, the sum of the first train/test set is strict
 
 These equations describe the train/test split pairs. It is important to note that the chronological indexing of the data is preserved for both input data and additional "held-out" data. This splitting strategy helps validate the results of the exhaustive hyperparameter search that is described in the next section.
 \subsection{Grid Search}
-This search algorithm is simple. It exhaustively generates candidate learning parameters and selects the best candidate based on the scoring function (MAPE). Each candidate undergoes the time series splitting strategy discussed in Section \ref{cross_validation} to help validate the candidate's score. Further discussion about alternative algorithms is in Section \ref{improving_hyperparameter_optimization_efficiency}.
+This search algorithm is simple. It exhaustively generates candidate learning parameters and selects the best candidate based on the scoring function (MAPE). The number of candidates $C$ is equal to all possible combinations of user-specified parameter values. For $n$ parameters, the number of candidates is equal to
+
+\begin{equation}
+  C = \prod_{i=1}^{n} x_i
+\end{equation}
+
+\noindent where $x_i$ is the number of values for the $i$th parameter. Each candidate is fit using the time series split strategy discussed in Section \ref{cross_validation} to help validate the candidate's score. As a result, the number of fits is equal to the number of candidates times the number of splits.
+
+\begin{equation}
+  \text{F} = C \times S
+\end{equation}
+
+\noindent For further discussion about alternative parameter seearch algorithms, see Section \ref{improving_hyperparameter_optimization_efficiency}.
 
 \subsection{Results}
-An example of the output this process is shown in Figure~\ref{fig:Example_Output}.
+Many trials with cross-validation were run, producing standardized output containing the learning parameters, test loss, and error metrics. Example output of this process is shown in Figure~\ref{fig:Example_Output}. Even though they are refitting multiple times, cross-validated trials completed very fast. The system is not so robust, failing $1/3$rd of the time; typically 300\% of the host machine's CPU usage was exceeded during failures. Although few learning parameters were tested, the cross-validation results are very consistent. We are reasonably sure that our model will perform well with unseen data.
+
+\begin{center}
+  \captionof{table}{Cross-validation Trials} \label{tab:cv_trials}
+  \begin{tabular}{ l c c c c c c c r }
+    Trial & Product & Length & MAPE & Runtime & Candidates & Splits & Fits & Failure \\
+    \hline
+    1 & 1 & 16 w & 5.13\% & 4:26 & 8 & 3 & 24 & - \\
+    2 & 1 & 16 w & 5.06\% & 8:24 & 8 & 3 & 24 & - \\
+    3 & 1 & 16 w & - & - & 8 & 3 & 24 & \checkmark \\
+    \hline
+    4 & 2 & 16 w & 4.13\% & 1:59 & 8 & 3 & 24 & - \\
+    5 & 2 & 16 w & 4.28\% & 2:17 & 8 & 3 & 24 & - \\
+    6 & 2 & 16 w & - & - & 8 & 3 & 24 & \checkmark \\
+    \hline
+    7 & 3 & 16 w & 	5.08\% & 2:04 & 8 & 3 & 24 & - \\
+    8 & 3 & 16 w & 	- & - & 8 & 3 & 24 & \checkmark \\
+    9 & 3 & 16 w & 	4.82\% & 2:10 & 8 & 3 & 24 & - \\
+  \end{tabular}
+\end{center}
 
 \begin{figure}[h]
-  \caption{Example of grid search output: 5.79\% MAPE}
+  \caption{Example of grid search output}
   \label{fig:Example_Output}
   \begin{center}
     \begin{tabular}{c}
@@ -200,7 +231,7 @@ All software written for this project was developed and tested on local machines
 \end{figure}
 
 \subsection{Distributed Task Queue}
-Since the machine learning processes are long-running processes, an open-source distributed task queue called Celery (\url{http://www.celeryproject.org/}) is used to manage the scheduling, status, and output. When the user uses the front-end to make a new forecast, an API endpoint queues the task. In our case, there was only one client utilizing the queue at a time. However, the additional benefit of using a task queue is to coordinate background jobs. When the end-user begins a new forecast task, they receive a response from the server immediately. The code on the client polls another API endpoint every second to check the status of the forecast task. When the status appears successful, the server responds with the necessary data to render the visualizations on the client device, as well as summary statistics.
+Since the machine learning processes are long-running processes, an open-source distributed task queue called Celery (\url{http://www.celeryproject.org/}) is used to manage scheduling, state changes, and output. When the user makes a new forecast, an API endpoint queues the task. In our case, there was only one client utilizing the queue at a time. However, the additional benefit of using a task queue is to coordinate background jobs. When the end-user begins a new forecast task, they receive a response from the server immediately. The code on the client polls another API endpoint every second to check the status of the forecast task. When the status appears successful, the server responds with the necessary data to render the visualizations on the client device, as well as summary statistics.
 
 \section{User Interface}
 \label{user_interface}
@@ -214,7 +245,7 @@ The user interface (UI) ties together my team's work on building an advanced mac
 \end{figure}
 
 \subsection{Forecast Visualization}
-The forecast app shows a line chart of historical data and forecasted monthly active users. The end-user is able to isolate the forecast trendline and export the chart to various image formats. Charts related to forecasting are shown in the Appendix. Figure~\ref{fig:Product_1-Trend} shows the historical monthly active user trend of Product 1 over a 12 week forecast in the dashed line, while Figure~\ref{fig:Product_1-Forecast} shows the isolated forecast for Product 1.
+The forecast app shows a line chart of historical data and forecasted monthly active users. The end-user is able to isolate the forecast trendline and export the chart to various image formats. Charts related to forecasting are shown in the Appendix.
 
 \subsection{Documentation}
 I also wrote documentation for the forecasting app with three sections tailored to different stakeholder segments. The first section provides basic usage instructions for the non-technical end-user. The second section, tailored towards data scientists, goes more in-depth about the organization of the model code and how the cross-validation works. Lastly, the third section provides all technical documentation about the application itself, tailored towards developers.
@@ -231,7 +262,7 @@ Currently, new datasets must be moved to the project data folder manually. A fut
 The brute-force search algorithm used to optimize hyperparameters can probably be replaced with another. The \texttt{GridSearchCV} class from \texttt{scikit-learn} implements the algorithm that was used for our project, but other hyperparameter optimizers are available in the \texttt{model\_selection} module of \texttt{scikit-learn}. The other options include a randomized search where a subset of the parameter grid is sampled. This requires passing in distributions of the hyperparameters themselves, which could be an interesting opportunity to avoid an exhaustive search.
 
 \section{Conclusion}
-The forecast app creates 16 week forecasts in under 1 minute with a 5\% error rate. The model was productionized into a dashboard interface that can be deployed anywhere. There are still further steps that would improve the user experience and model accuracy. There is also further research around the efficacy of our results, pertaining to LSTM networks, to be completed.
+The forecast app creates 16 week forecasts in under 1 minute with a 5\% error rate. The model was productionized into a dashboard interface that can be deployed anywhere. There are still further steps that would improve the user experience and model accuracy. There is also further research for verifying the efficacy of our model.
 
 \begin{thebibliography}{9}
   % Time series forecasting using a hybrid ARIMA and neural network model
@@ -265,20 +296,49 @@ The forecast app creates 16 week forecasts in under 1 minute with a 5\% error ra
   Sculley, D., Holt, G., Golovin, D., Davydov, E., Phillips, T., Ebner, D., ...Dennison, D. (2015). Hidden Technical Debt in Machine Learning Systems. \textit{NIPS'15 Proceedings of the 28th International Conference on Neural Information Processing Systems}, \textit{2}(2503-2511).
 \end{thebibliography}
 
+\newpage
 \begin{appendices}
-\begin{figure}[h]
-  \caption{Product 1 trend: 6.24\% MAPE}
-  \centering
-  \includegraphics[width=12.5cm]{images/Product_1-Trend-6_24_Percent_MAPE.png}
-  \label{fig:Product_1-Trend}
-\end{figure}
+  \begin{figure}[h]
+    \caption{Product 1 trend: 6.24\% MAPE}
+    \centering
+    \includegraphics[width=12.5cm]{images/Product_1-Trend-6_24_Percent_MAPE.png}
+    \label{fig:Product_1-Trend}
+  \end{figure}
 
-\begin{figure}[h]
-  \caption{Product 1 forecast: 6.24\% MAPE}
-  \centering
-  \includegraphics[width=12.5cm]{images/Product_1-Forecast-6_24_Percent_MAPE.png}
-  \label{fig:Product_1-Forecast}
-\end{figure}
+  \begin{figure}[h]
+    \caption{Product 1 forecast: 6.24\% MAPE}
+    \centering
+    \includegraphics[width=12.5cm]{images/Product_1-Forecast-6_24_Percent_MAPE.png}
+    \label{fig:Product_1-Forecast}
+  \end{figure}
+
+  \begin{figure}[h]
+    \caption{Product 2 trend: 6.05\% MAPE}
+    \centering
+    \includegraphics[width=12.5cm]{images/Product_2-Trend-6_05_Percent_MAPE.png}
+    \label{fig:Product_2-Trend}
+  \end{figure}
+
+  \begin{figure}[h]
+    \caption{Product 2 forecast: 6.05\% MAPE}
+    \centering
+    \includegraphics[width=12.5cm]{images/Product_2-Forecast-6_05_Percent_MAPE.png}
+    \label{fig:Product_2-Forecast}
+  \end{figure}
+
+  \begin{figure}[h]
+    \caption{Product 3 trend: 4.82\% MAPE}
+    \centering
+    \includegraphics[width=12.5cm]{images/Product_3-Trend-4_82_Percent_MAPE.png}
+    \label{fig:Product_3-Trend}
+  \end{figure}
+
+  \begin{figure}[h]
+    \caption{Product 3 forecast: 4.82\% MAPE}
+    \centering
+    \includegraphics[width=12.5cm]{images/Product_3-Forecast-4_82_Percent_MAPE.png}
+    \label{fig:Product_3-Forecast}
+  \end{figure}
 \end{appendices}
 
 \end{document}
