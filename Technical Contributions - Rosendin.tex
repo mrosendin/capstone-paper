@@ -43,10 +43,7 @@
 \title{
   \normalsize \textsc{Chapter 1} \\ [2.0cm]
   \HRule{0.5pt} \\
-  \LARGE \textbf{\uppercase{
-  Time Series Forecasting of Monthly Active Users with Long Short-Term Memory
-      Networks
-  }}
+  \LARGE \textbf{\uppercase{Technical Contributions}}
   \HRule{2pt} \\ [0.5cm]
   \vspace*{5\baselineskip}
 }
@@ -103,7 +100,7 @@ where $c$ is a constant, $\epsilon_t$ is an error term, and $\phi_1, ..., \phi_p
   X_t = c + \phi_1 X_{t-1} + \phi_2 X_{t-2} + \phi_3 X_{t-3} + \epsilon_t
 \end{equation}
 
-We would call this an autoregressive model with a lag of 3 time steps where time steps are defined as the number of sequential data points. The autoregressive model can be notated as $AR(3)$ to indicate its order with $p=3$.
+We would call this an autoregressive model with a lag of 3 time steps where time steps are defined as the number of sequential data points. The autoregressive model can be notated as $AR(3)$ to indicate its order with $p=3$. Certain information criteria, such as Akaike's information criterion (AIC) or Bayesian information criteron (BIC), are commonly used to select the best lag length \cite{liew}.
 
 In our work we use the concept of "lag" from the autoregressive model in our supervised learning model. Our dataset is multivariate, meaning there are more than two observations for each time step. Since we would like to forecast multiple weeks into the future, our model is multi-stepped.
 
@@ -117,7 +114,7 @@ There are many good reasons to justify using an artificial neural network. Much 
   \includegraphics[width=12.5cm]{images/Long_Short-Term_Memory.png}
 \end{figure}
 
-Recurrent neural networks (RNNs) are a class of artificial neural network that use reasoning about previous events in the data to inform predictions \cite{olah}. In other words, RNNs retain state at one time to the next, using the previous state's output for the current estimate. This characteristic enables multi-stepped time series forecasting. A particular architecture of RNNs known as Long Short-Term Memory (LSTM) allows the model to recognize and retain short-term patterns for long periods of time. This architecture is used best where data from an earlier state needs to be recalled at a later state. Examples of LSTM networks in industry include Google Voice \cite{beaufays}.
+Recurrent neural networks (RNNs) are a class of artificial neural network that use reasoning about previous events in the data to inform predictions \cite{olah}. In other words, RNNs retain state at one time to the next, using the previous state's output for the current estimate. This characteristic enables multi-stepped time series forecasting. A particular architecture of RNNs known as Long Short-Term Memory (LSTM) allows the model to recognize and retain short-term patterns for long periods of time \cite{hochreiter}. This architecture is used best where data from an earlier state needs to be recalled at a later state. Examples of LSTM networks in industry include Google Voice \cite{beaufays} and state-of-the-art performance on Google Translate \cite{le}.
 
 \section{Object-Oriented Abstraction}
 The working LSTM model was created in a Jupyter Notebook. While serving as a minimum proof of concept, the model should not require that the end-user engage directly with code. Furthermore, the following criteria were set: 1) the lifecycle of the model from training, testing, to final predictions needed to be automated and callable with a simple applicaition programming interface (API); 2) the Jupyter Notebook code (which executes similarly to a script) needed to be organized into an object-oriented structure to store data within the object instance; 3) the model needed to be capable of loading datasets of arbitrary products. Criterion (2) is more a matter of preference and style to the author, as other programming paradigms could be considered. The rest of this section briefly discusses the process involved in restructuring the model code to meet the criteria.
@@ -263,7 +260,7 @@ Currently, new datasets must be moved to the project data folder manually. A fut
 The brute-force search algorithm used to optimize hyperparameters can probably be replaced with another. The \texttt{GridSearchCV} class from \texttt{scikit-learn} implements the algorithm that was used for our project, but other hyperparameter optimizers are available in the \texttt{model\_selection} module of \texttt{scikit-learn}. The other options include a randomized search where a subset of the parameter grid is sampled. This requires passing in distributions of the hyperparameters themselves, which could be an interesting opportunity to avoid an exhaustive search.
 
 \section{Conclusion}
-The forecast app creates 16 week forecasts in under 1 minute with a 5\% error rate. The model was productionized into a dashboard interface that can be deployed anywhere. There are still further steps that would improve the user experience and model accuracy. There is also further research for verifying the efficacy of our model.
+The forecast app creates 16 week forecasts in under 1 minute with a 5\% error rate and the results have been cross-validated. The model was productionized into a dashboard interface that can be deployed anywhere, for any product. There are still further steps that would improve the user experience and model accuracy. There is also further research to be conducted around verifying the efficacy of our model and for architectural improvements.
 
 \newpage
 \bibliographystyle{apacite}
