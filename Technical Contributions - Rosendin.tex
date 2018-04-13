@@ -3,7 +3,8 @@
 \usepackage{graphicx}
 \usepackage{amssymb}
 \usepackage{amsmath}
-% \usepackage{apacite}
+\usepackage{apacite}
+\usepackage[numbers]{natbib}
 \usepackage{fancyhdr}
 \usepackage{lastpage}
 \usepackage{graphicx, wrapfig, subcaption, setspace, booktabs}
@@ -108,7 +109,7 @@ In our work we use the concept of "lag" from the autoregressive model in our sup
 
 \subsection{Recurrent Neural Networks}
 
-There are many good reasons to justify using an artificial neural network. Much of the recent literature on time series forecasting is focusing on the advantage of ANNs versus other methods, including autoregressive interactive moving average (ARIMA) models. For instance, Ahmed et al. and Zhang show that ANNs are shown to be superior for generalized time series problems \cite{ahmed et al.}. Although complex models such as neural networks can hard to interpret, our project team values performance over interpretability. Furthermore, we have designed features similar to those in financial time series models. For financial stock data, Adebiye et al. show that ANNs are superior to ARIMA models \cite{adebiye et al.}. Lastly, ANNs are capable of modeling non-linearities which can improve the forecast.
+There are many good reasons to justify using an artificial neural network. Much of the recent literature on time series forecasting is focusing on the advantage of ANNs versus other methods, including autoregressive interactive moving average (ARIMA) models. For instance, Ahmed et al. and Zhang show that ANNs are shown to be superior for generalized time series problems \cite{ahmed}. Although complex models such as neural networks can hard to interpret, our project team values performance over interpretability. Furthermore, we have designed features similar to those in financial time series models. For financial stock data, Adebiye et al. show that ANNs are superior to ARIMA models \cite{adebiye}. Lastly, ANNs are capable of modeling non-linearities which can improve the forecast.
 
 \begin{figure}[h]
   \caption{Diagram of a one-unit Long Short-Term Memory (LSTM) network \cite{deloche}}
@@ -116,7 +117,7 @@ There are many good reasons to justify using an artificial neural network. Much 
   \includegraphics[width=12.5cm]{images/Long_Short-Term_Memory.png}
 \end{figure}
 
-Recurrent neural networks (RNNs) are a class of artificial neural network where connections between units form a directed graph along a sequence. In other words, RNNs retain state at one time to the next, using the previous state's output for the current estimate. This characteristic enables multi-stepped time series forecasting. A particular architecture of RNNs known as Long Short-Term Memory (LSTM) allows the model to recognize and retain short-term patterns for long periods of time. This architecture is used best where data from an earlier state needs to be recalled at a later state. Examples of LSTM networks in industry include Google Voice \cite{beaufays}.
+Recurrent neural networks (RNNs) are a class of artificial neural network that use reasoning about previous events in the data to inform predictions \cite{olah}. In other words, RNNs retain state at one time to the next, using the previous state's output for the current estimate. This characteristic enables multi-stepped time series forecasting. A particular architecture of RNNs known as Long Short-Term Memory (LSTM) allows the model to recognize and retain short-term patterns for long periods of time. This architecture is used best where data from an earlier state needs to be recalled at a later state. Examples of LSTM networks in industry include Google Voice \cite{beaufays}.
 
 \section{Object-Oriented Abstraction}
 The working LSTM model was created in a Jupyter Notebook. While serving as a minimum proof of concept, the model should not require that the end-user engage directly with code. Furthermore, the following criteria were set: 1) the lifecycle of the model from training, testing, to final predictions needed to be automated and callable with a simple applicaition programming interface (API); 2) the Jupyter Notebook code (which executes similarly to a script) needed to be organized into an object-oriented structure to store data within the object instance; 3) the model needed to be capable of loading datasets of arbitrary products. Criterion (2) is more a matter of preference and style to the author, as other programming paradigms could be considered. The rest of this section briefly discusses the process involved in restructuring the model code to meet the criteria.
@@ -175,7 +176,7 @@ This search algorithm is simple. It exhaustively generates candidate learning pa
 \noindent For further discussion about alternative parameter seearch algorithms, see Section \ref{improving_hyperparameter_optimization_efficiency}.
 
 \subsection{Results}
-Many trials with cross-validation were run, producing standardized output containing the learning parameters, test loss, and error metrics. Example output of this process is shown in Figure~\ref{fig:Example_Output}. Even though they are refitting multiple times, cross-validated trials completed very fast. The system is not so robust, failing $1/3$rd of the time; typically 300\% of the host machine's CPU usage was exceeded during failures. Although few learning parameters were tested, the cross-validation results are very consistent. We are reasonably sure that our model will perform well with unseen data.
+Many trials with cross-validation were run, producing standardized output containing the learning parameters, test loss, and error metrics. Example output of this process is shown in Figure~\ref{fig:Example_Output}. Even though they are refitting multiple times, cross-validated trials completed very fast. The system is not so robust, failing $1/3$rd of the time; typically 300\% of the host machine's CPU usage was exceeded during failures. Although few learning parameters were tested, the cross-validation results are very consistent. We are reasonably sure that our model will perform well with unseen data. As a note, choosing the hyperparameters with higher cross-validation errors will help prevent overfitting when forecasting \cite{ng}.
 
 \begin{center}
   \captionof{table}{Cross-validation Trials} \label{tab:cv_trials}
@@ -218,7 +219,7 @@ Many trials with cross-validation were run, producing standardized output contai
 \end{figure}
 
 \section{Systems Engineering}
-The goal at the onset was to develop a minimal machine learning system to avoid the problem of technical debt \cite{sculley et al.}. I worked to productionize our model by building a back-end that is capable of extracting and preparing data, training and validating the model, and producing forecasts. The back-end performs the business logic computation without end-user interaction. The back-end was written entirely in Python and its component parts are discussed in this section.
+The goal at the onset was to develop a minimal machine learning system to avoid the problem of technical debt \cite{sculley}. I worked to productionize our model by building a back-end that is capable of extracting and preparing data, training and validating the model, and producing forecasts. The back-end performs the business logic computation without end-user interaction. The back-end was written entirely in Python and its component parts are discussed in this section.
 
 \subsection{Server Infrastructure}
 All software written for this project was developed and tested on local machines. System specifications of the host machine producing the results in this report are shown in Figure~\ref{fig:System_Specs}. The system runs Python 3.6.4 and we've tested on local machines (macOS) and a Docker virtual host container running Ubuntu 16.04. A simple web server framework, Flask (\url{http://flask.pocoo.org/}), is employed to interact with the front-end (see in Section \ref{user_interface}). A basic API has been developed to enable asynchronous communication with the front-end client device.
@@ -264,37 +265,9 @@ The brute-force search algorithm used to optimize hyperparameters can probably b
 \section{Conclusion}
 The forecast app creates 16 week forecasts in under 1 minute with a 5\% error rate. The model was productionized into a dashboard interface that can be deployed anywhere. There are still further steps that would improve the user experience and model accuracy. There is also further research for verifying the efficacy of our model.
 
-\begin{thebibliography}{9}
-  % Time series forecasting using a hybrid ARIMA and neural network model
-  % https://www.sciencedirect.com/science/article/pii/S0925231201007020
-
-  % Bayesian information criterion - Wikipedia
-  % https://en.wikipedia.org/wiki/Bayesian_information_criterion
-
-  % Building Intelligent Systems: A Guide to Machine Learning Engineering
-  % https://books.google.com/books?id=s91PDwAAQBAJ
-
-  % Scaling up Machine Learning
-  % https://books.google.com/books?id=9u0gAwAAQBAJ
-
-  % Google voice search: faster and more accurate
-  % https://research.googleblog.com/2015/09/google-voice-search-faster-and-more.html
-
-  \bibitem{adebiye et al.}
-  Adebiyi, A. A., Adewumi, A. O., \& Ayo, C. K. (2014). Comparison of ARIMA and Artificial Neural Network Models for Stock Price Prediction. \textit{Journal of Applied Mathematics}, \textit{2014}.
-
-  \bibitem{ahmed et al.}
-  Ahmed, N. K., Atiya, A. F., Gayar, N. E., \& El-Shishiny, H. (2010). An Empirical Comparison of Machine Learning Models for Time Series Forecasting. \textit{Econometric Reviews}, \textit{29}(5-6).
-
-  \bibitem{beaufays}
-  Beaufays. (2015, August 11). The neural networks behind Google Voice transcription [Blog post]. Retrieved from https://research.googleblog.com/2015/08/the-neural-networks-behind-google-voice.html.
-
-  \bibitem{deloche}
-  Deloche, Fran\c{c}ois. (2017). Diagram of a one-unit Long Short-Term Memory (LSTM) network. Retrieved from https://commons.wikimedia.org/w/index.php?curid=60149410.
-
-  \bibitem{sculley et al.}
-  Sculley, D., Holt, G., Golovin, D., Davydov, E., Phillips, T., Ebner, D., ...Dennison, D. (2015). Hidden Technical Debt in Machine Learning Systems. \textit{NIPS'15 Proceedings of the 28th International Conference on Neural Information Processing Systems}, \textit{2}(2503-2511).
-\end{thebibliography}
+\newpage
+\bibliographystyle{apacite}
+\bibliography{references}
 
 \newpage
 \begin{appendices}
